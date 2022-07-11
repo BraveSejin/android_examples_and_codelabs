@@ -31,6 +31,14 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    android{
+        compileOptions{
+//            https://noahlogs.tistory.com/42
+            sourceCompatibility 1.8
+            targetCompatibility 1.8
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false

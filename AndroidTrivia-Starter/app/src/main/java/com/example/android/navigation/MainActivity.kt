@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // TODO (01) Create the new TitleFragment
-    // Select File->New->Fragment->Fragment (Blank)
+    // Select File->New->Fragmen t->Fragment (Blank)
 
     // TODO (02) Clean up the new TitleFragment
     // In our new TitleFragment
