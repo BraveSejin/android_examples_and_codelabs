@@ -55,11 +55,6 @@ class StartFragment : Fragment() {
             viewModel = sharedViewModel
             lifecycleOwner = viewLifecycleOwner
             startFragment = this@StartFragment
-
-            // Set up the button click listeners
-//            orderOneCupcake.setOnClickListener { orderCupcake(1) }
-//            orderSixCupcakes.setOnClickListener { orderCupcake(6) }
-//            orderTwelveCupcakes.setOnClickListener { orderCupcake(12) }
         }
     }
 
