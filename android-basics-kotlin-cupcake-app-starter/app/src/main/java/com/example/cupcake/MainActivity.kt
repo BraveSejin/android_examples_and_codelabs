@@ -15,10 +15,26 @@
  */
 package com.example.cupcake
 
+import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupActionBarWithNavController
 
 /**
  * Activity for cupcake order flow.
  * super.onCreate, setContentView 까지 한거랑 동일하다.
  */
-class MainActivity : AppCompatActivity(R.layout.activity_main)
+class MainActivity : AppCompatActivity(R.layout.activity_main){
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //navController를 이용해 앱바의 제목을 변경가능navhostfragment ㅁㄴㅇㄹ
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.findNavController()
+
+        // 앱 바에 제목을 성정하고, 뒤로가기 표시를 넣어준다.
+        setupActionBarWithNavController(navController)
+    }
+}
