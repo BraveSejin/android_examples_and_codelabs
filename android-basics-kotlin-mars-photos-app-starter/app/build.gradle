@@ -47,6 +47,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
+        // java8 기능을 위한 지원 활성화. AGP에 내장되어있다.
         jvmTarget = '1.8'
     }
 }
@@ -62,4 +63,10 @@ dependencies {
 
     implementation 'com.google.android.material:material:1.4.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    //스칼라변환기
+    implementation "com.squareup.retrofit2:converter-scalars:2.9.0"
+
+
 }
