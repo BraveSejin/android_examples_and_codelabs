@@ -13,7 +13,7 @@ private val retrofit = Retrofit.Builder()
 
 interface MarsApiService {
     @GET("photos")
-    fun getPhotos(): String
+    suspend fun getPhotos(): String // suspend를 붙이면 코루틴 내에서 호출 가능
 }
 
 object MarsApi {
