@@ -77,6 +77,7 @@ class ItemDetailFragment : Fragment() {
             sellItem.setOnClickListener { viewModel.sellItem(item) }
             sellItem.isEnabled = viewModel.isStockAvailable(item)
             deleteItem.setOnClickListener { showConfirmationDialog() }
+            editItem.setOnClickListener { editItem() }
         }
     }
 
@@ -96,6 +97,15 @@ class ItemDetailFragment : Fragment() {
     private fun deleteItem() {
         viewModel.deleteItem(item)
         findNavController().navigateUp()
+    }
+
+    // add fragment를 재사용할건데, 프래그먼트 제목 문자열을 id와 함께 작업의 일부로 전송할거임.
+    private fun editItem() {
+        val action = ItemDetailFragmentDirections.actionItemDetailFragmentToAddItemFragment(
+            getString(R.string.edit_fragment_title),
+            item.id
+        )
+        this.findNavController().navigate(action)
     }
 
     /**
