@@ -1,18 +1,30 @@
+/*
+ * Copyright (C) 2021 The Android Open Source Project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.inventory.data
 
-import Item
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
 /**
- * Specify the Item as the only class with the list of entities.
-Set the version as 1. Whenever you change the schema of the database table, you'll have to increase the version number.
-Set exportSchema to false, so as not to keep schema version history backups.
-
- * */
-@Database(entities = arrayOf(Item::class), version = 1, exportSchema = false)
+ * Database class with a singleton INSTANCE object.
+ */
+@Database(entities = [Item::class], version = 1, exportSchema = false)
 abstract class ItemRoomDatabase : RoomDatabase() {
 
     abstract fun itemDao(): ItemDao
@@ -41,4 +53,3 @@ abstract class ItemRoomDatabase : RoomDatabase() {
         }
     }
 }
-
