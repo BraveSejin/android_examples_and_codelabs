@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.busschedule.database.schedule.Schedule
 import com.example.busschedule.database.schedule.ScheduleDao
+import kotlinx.coroutines.flow.Flow
 
 // 프래그먼트에서 schedule을 주입할 수 없다. 따라서 생성자에 넣어주고 팩토리 패턴을 이용해 인스턴스화하자
 class BusScheduleViewModel(private val scheduleDao: ScheduleDao) : ViewModel() {
 
-    fun fullSchedule(): List<Schedule> = scheduleDao.getAll()
+    fun fullSchedule(): Flow<List<Schedule>> = scheduleDao.getAll()
 
-    fun scheduleForStopName(name: String): List<Schedule> = scheduleDao.getByStopName(name)
+    fun scheduleForStopName(name: String): Flow<List<Schedule>> = scheduleDao.getByStopName(name)
 }
 
 class BusScheduleViewModelFactory(
