@@ -54,6 +54,7 @@ class LetterListFragment : Fragment() {
         SettingDataStore.preferenceFlow.asLiveData().observe(viewLifecycleOwner) {
             isLinearLayoutManager = it
             chooseLayout()
+            activity?.invalidateOptionsMenu() //
         }
     }
 
