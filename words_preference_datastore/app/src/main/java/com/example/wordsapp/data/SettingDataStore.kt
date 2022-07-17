@@ -1,7 +1,51 @@
 package com.example.wordsapp.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import java.io.IOException
+
+private const val LAYOUT_PREFERENCES_NAME = "layout_preferences"
+
+// Create a DataStore instance using the preferencesDataStore delegate, with the Context as
+// receiver.
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = LAYOUT_PREFERENCES_NAME
+)
 
 class SettingDataStore(context: Context) {
-//    private const val LAYOUT_PREFERENCE_NAME = "layout_preferences"
+    private val IS_LINEAR_LAYOUT_MANAGER =
+        booleanPreferencesKey("is_linear_layout_manager")
+
+    suspend fun saveLayoutToPreferencesStore(
+        isLinearLayoutManager: Boolean,
+        context: Context
+    ) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_LINEAR_LAYOUT_MANAGER] = isLinearLayoutManager
+        }
+    }
+
+    // 읽기 : DataStore는 환경설정 변경시마다 Flow<Preferences>에 저장된 데이터를 노출한다.
+    // 전체를 노출하지 않고, 필요한 깞만 매핑해서 노추랗는 것이 좋다.
+    val preferenceFlow: Flow<Boolean> = context.dataStore.data
+        .catch {// 읽는중 오류가 발생한 경우 emptyPreferences로 내보낸다. ㅁㄴㅇㄹ
+            if (it is IOException) {
+                it.printStackTrace()
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            // On the first run of the app, we will use LinearLayoutManager by default
+            preferences[IS_LINEAR_LAYOUT_MANAGER] ?: true
+        }
 }
