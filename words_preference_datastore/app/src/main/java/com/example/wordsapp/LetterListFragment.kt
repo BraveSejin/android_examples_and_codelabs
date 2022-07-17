@@ -4,10 +4,14 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wordsapp.data.SettingDataStore
 import com.example.wordsapp.databinding.FragmentLetterListBinding
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,6 +30,7 @@ class LetterListFragment : Fragment() {
 
     private var isLinearLayoutManager = true
 
+    private lateinit var SettingDataStore: SettingDataStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,11 @@ class LetterListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recyclerView = binding.recyclerView
         chooseLayout()
+        SettingDataStore = SettingDataStore(requireContext())
+        SettingDataStore.preferenceFlow.asLiveData().observe(viewLifecycleOwner) {
+            isLinearLayoutManager = it
+            chooseLayout()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -76,7 +86,6 @@ class LetterListFragment : Fragment() {
         }
     }
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_switch_layout -> {
@@ -84,12 +93,17 @@ class LetterListFragment : Fragment() {
                 chooseLayout()
                 setIcon(item)
 
+                lifecycleScope.launch {
+                    SettingDataStore.saveLayoutToPreferencesStore(
+                        isLinearLayoutManager,
+                        requireContext()
+                    )
+                }
+
                 return true
             }
 
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-
 }

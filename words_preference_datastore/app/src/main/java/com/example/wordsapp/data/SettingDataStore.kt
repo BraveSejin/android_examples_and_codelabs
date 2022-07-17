@@ -44,6 +44,7 @@ class SettingDataStore(context: Context) {
                 throw it
             }
         }
+
         .map { preferences ->
             // On the first run of the app, we will use LinearLayoutManager by default
             preferences[IS_LINEAR_LAYOUT_MANAGER] ?: true
