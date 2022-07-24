@@ -15,6 +15,7 @@
  */
 package com.example.forage.data
 
+import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.forage.model.Forageable
 
@@ -23,4 +24,5 @@ import com.example.forage.model.Forageable
  * This database stores a [Forageable] entity
  */
 // TODO: create the database with all necessary annotations, methods, variables, etc.
+@Database(entities = [Forageable::class], version = 1, exportSchema = false)
 abstract class ForageDatabase : RoomDatabase()
