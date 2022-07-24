@@ -32,7 +32,7 @@ class ForageableViewModel(
 ) : ViewModel() {
 
     // TODO: create a property to set to a list of all forageables from the DAO
-    val allItem: LiveData<List<Forageable>> = forageableDao.getForageables().asLiveData()
+    val allForageables: LiveData<List<Forageable>> = forageableDao.getForageables().asLiveData()
     // TODO : create method that takes id: Long as a parameter and retrieve a Forageable from the
     //  database by id via the DAO.
     fun getForageable(id: Long) : LiveData<Forageable>{
@@ -51,6 +51,8 @@ class ForageableViewModel(
             inSeason = inSeason,
             notes = notes
         )
+        viewModelScope.launch(Dispatchers.IO) { forageableDao.insert(forageable) }
+
 
         // TODO: launch a coroutine and call the DAO method to add a Forageable to the database within it
     }
