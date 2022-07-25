@@ -22,9 +22,13 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.background.workers.BlurWorker
+import com.example.background.workers.CleanupWorker
+import com.example.background.workers.SaveImageToFileWorker
 
 class BlurViewModel(application: Application) : ViewModel() {
 
@@ -36,12 +40,39 @@ class BlurViewModel(application: Application) : ViewModel() {
     init {
         imageUri = getImageUri(application.applicationContext)
     }
+
     /**
      * Create the WorkRequest to apply the blur and save the resulting image
      * @param blurLevel The amount to blur the image
      */
     internal fun applyBlur(blurLevel: Int) {
-        workManager.enqueue(OneTimeWorkRequest.from(BlurWorker::class.java))
+        // Add WorkRequest to Cleanup temporary images
+        var continuation = workManager
+            .beginWith(OneTimeWorkRequest
+                .from(CleanupWorker::class.java))
+
+        // Add WorkRequest to blur the image
+        for (i in 0 until blurLevel){
+            val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
+            if (i == 0){
+                blurBuilder.setInputData(createInputDataForUri())
+            }
+            continuation = continuation.then(blurBuilder.build())
+        }
+
+
+        // Add WorkRequest to save the image to the filesystem
+        val save = OneTimeWorkRequest.Builder(SaveImageToFileWorker::class.java).build()
+
+        continuation = continuation.then(save)
+
+        // Actually start the work
+        continuation.enqueue()
+
+//        val blurRequest = OneTimeWorkRequestBuilder<BlurWorker>()
+//            .setInputData(createInputDataForUri())
+//            .build()
+//        workManager.enqueue(blurRequest)
     }
 
     private fun uriOrNull(uriString: String?): Uri? {
@@ -67,6 +98,12 @@ class BlurViewModel(application: Application) : ViewModel() {
 
     internal fun setOutputUri(outputImageUri: String?) {
         outputUri = uriOrNull(outputImageUri)
+    }
+
+    private fun createInputDataForUri(): Data {
+        val builder = Data.Builder()
+        imageUri?.let { builder.putString(KEY_IMAGE_URI, imageUri.toString()) }
+        return builder.build()
     }
 
     class BlurViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
