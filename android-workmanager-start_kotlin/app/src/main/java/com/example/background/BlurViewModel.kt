@@ -58,18 +58,22 @@ class BlurViewModel(application: Application) : ViewModel() {
             )
 
         // Add WorkRequest to blur the image
-        for (i in 0 until blurLevel){
+        for (i in 0 until blurLevel) {
             val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
-            if (i == 0){
+            if (i == 0) {
                 blurBuilder.setInputData(createInputDataForUri())
             }
             continuation = continuation.then(blurBuilder.build())
         }
 
+        val constraints = Constraints.Builder()
+            .setRequiresCharging(true)
+            .build()
 
         // Add WorkRequest to save the image to the filesystem
         val save = OneTimeWorkRequestBuilder<SaveImageToFileWorker>()
             .addTag(TAG_OUTPUT)
+            .setConstraints(constraints)
             .build()
 
         continuation = continuation.then(save)
@@ -81,6 +85,10 @@ class BlurViewModel(application: Application) : ViewModel() {
 //            .setInputData(createInputDataForUri())
 //            .build()
 //        workManager.enqueue(blurRequest)
+    }
+
+    internal fun cancelWork() {
+        workManager.cancelUniqueWork(IMAGE_MANIPULATION_WORK_NAME)
     }
 
     private fun uriOrNull(uriString: String?): Uri? {
