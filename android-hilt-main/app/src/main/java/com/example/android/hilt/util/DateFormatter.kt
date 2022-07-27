@@ -19,11 +19,13 @@ package com.example.android.hilt.util
 import android.annotation.SuppressLint
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.inject.Inject
 
 /**
  * String formatter for the log dates.
  */
-class DateFormatter {
+// instance 제공 방법 알기
+class DateFormatter @Inject constructor(){
 
     @SuppressLint("SimpleDateFormat")
     private val formatter = SimpleDateFormat("d MMM yyyy HH:mm:ss")
