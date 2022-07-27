@@ -26,18 +26,21 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.example.android.hilt.ui.MainActivity
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Matchers.containsString
 import org.junit.After
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@HiltAndroidTest// 테스트의 hilt 구성요소 생성 담당 ㅁㄴㅇㄹ
 class AppTest {
 
-    @After
-    fun tearDown() {
-        // Remove logs after the test finishes
-    }
+    @get:Rule
+    //구성요소의 상태를 관리하고 테스트에 삽입을 실행하는 데 사용되는 HiltAndroidRule
+    var hiltRule = HiltAndroidRule(this)
 
     @Test
     fun happyPath() {
