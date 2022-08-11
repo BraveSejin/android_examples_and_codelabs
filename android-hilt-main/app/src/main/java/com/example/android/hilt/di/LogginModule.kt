@@ -23,7 +23,7 @@ annotation class DatabaseLogger
 @Module
 abstract class LoggingDatabaseModule {
     @DatabaseLogger
-    @Singleton
+
     @Binds
     abstract fun bindDatabaseLogger(impl: LoggerLocalDataSource): LoggerDataSource
 }
@@ -32,7 +32,7 @@ abstract class LoggingDatabaseModule {
 @Module
 abstract class LoggingInMemoryModule {
     @InMemoryLogger
-    @ActivityScoped
+
     @Binds
     abstract fun bindInMemoryLogger(impl: LoggerInMemoryDataSource): LoggerDataSource
 }
