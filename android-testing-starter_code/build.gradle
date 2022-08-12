@@ -50,4 +50,6 @@ ext {
     timberVersion = '4.7.1'
     hamcrestVersion = '2.2'
     robolectricVersion = "4.8"
+
+    archTestingVersion = '2.1.0'
 }
