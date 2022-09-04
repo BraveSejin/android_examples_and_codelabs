@@ -58,6 +58,7 @@ class TasksActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationDrawer() {
+        lifecycle
         drawerLayout = (findViewById<DrawerLayout>(R.id.drawer_layout))
             .apply {
                 setStatusBarBackground(R.color.colorPrimaryDark)

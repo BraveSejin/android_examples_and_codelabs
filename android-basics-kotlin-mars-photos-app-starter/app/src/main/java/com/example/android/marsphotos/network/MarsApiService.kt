@@ -2,6 +2,7 @@ package com.example.android.marsphotos.network
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
@@ -18,7 +19,7 @@ private val retrofit = Retrofit.Builder()
 
 interface MarsApiService {
     @GET("photos")
-    suspend fun getPhotos(): List<MarsPhoto> // suspend를 붙이면 코루틴 내에서 호출 가능
+    suspend fun getPhotos(): Response<List<MarsPhoto>> // suspend를 붙이면 코루틴 내에서 호출 가능
 }
 
 object MarsApi {
