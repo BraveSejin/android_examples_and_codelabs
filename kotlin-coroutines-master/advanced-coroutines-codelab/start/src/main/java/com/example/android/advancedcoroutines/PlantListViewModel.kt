@@ -16,12 +16,9 @@
 
 package com.example.android.advancedcoroutines
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.switchMap
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -48,6 +45,7 @@ class PlantListViewModel internal constructor(
         get() = _snackbar
 
     private val _spinner = MutableLiveData<Boolean>(false)
+
     /**
      * Show a loading spinner if true
      */
@@ -58,6 +56,10 @@ class PlantListViewModel internal constructor(
      * The current growZone selection.
      */
     private val growZone = MutableLiveData<GrowZone>(NoGrowZone)
+
+    // StateFlow: 제공된 마지막 값을 보유한다. 스레드로부터 안전함. 초기 값을호 생성되며, collect하지 않고도 상태유지, 후속 수집 간에도 상태유지
+    // How Flow 라고 한다.
+    private val growZoneFlow = MutableStateFlow<GrowZone>(NoGrowZone)
 
     /**
      * A list of plants that updates based on the current filter.
@@ -70,9 +72,32 @@ class PlantListViewModel internal constructor(
         }
     }
 
+    //    val plantsUsingFlow: LiveData<List<Plant>> = plantRepository.plantsFlow.asLiveData()
+    val plantsUsingFlow: LiveData<List<Plant>> = growZoneFlow.flatMapLatest { growZone ->
+        if (growZone == NoGrowZone) {
+            plantRepository.plantsFlow
+        } else {
+            plantRepository.getPlantsWithGrowZoneFlow(growZone)
+        }
+    }.asLiveData()
+
     init {
         // When creating a new ViewModel, clear the grow zone and perform any related udpates
         clearGrowZoneNumber()
+
+        growZoneFlow.mapLatest { growZone ->
+            _spinner.value = true
+            if (growZone == NoGrowZone) {
+                plantRepository.tryUpdateRecentPlantsCache()
+            } else {
+                plantRepository.tryUpdateRecentPlantsForGrowZoneCache(growZone)
+            }
+        }
+            .onEach { _spinner.value = false }// 값을 내보낼 때마다 호출
+            .catch { throwable -> _snackbar.value = throwable.message }
+            .launchIn(viewModelScope) // viewmodelScope에서 플로우를 collect함 코루틴을 만들고 flow에서 값을 수집하는 역할임.
+
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
     }
 
     /**
@@ -83,9 +108,11 @@ class PlantListViewModel internal constructor(
      */
     fun setGrowZoneNumber(num: Int) {
         growZone.value = GrowZone(num)
+        growZoneFlow.value = GrowZone(num)
 
         // initial code version, will move during flow rewrite
-        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsForGrowZoneCache(GrowZone(num)) }
     }
 
     /**
@@ -96,9 +123,10 @@ class PlantListViewModel internal constructor(
      */
     fun clearGrowZoneNumber() {
         growZone.value = NoGrowZone
+        growZoneFlow.value = NoGrowZone
 
         // initial code version, will move during flow rewrite
-        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
     }
 
     /**
