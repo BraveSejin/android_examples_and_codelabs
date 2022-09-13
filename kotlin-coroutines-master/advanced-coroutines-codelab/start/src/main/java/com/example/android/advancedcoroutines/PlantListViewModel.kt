@@ -18,8 +18,7 @@ package com.example.android.advancedcoroutines
 
 import androidx.lifecycle.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -46,11 +45,13 @@ class PlantListViewModel internal constructor(
         get() = _snackbar
 
     private val _spinner = MutableLiveData<Boolean>(false)
+
     /**
      * Show a loading spinner if true
      */
     val spinner: LiveData<Boolean>
         get() = _spinner
+
     /**
      * The current growZone selection.
      */
@@ -74,9 +75,9 @@ class PlantListViewModel internal constructor(
 
     //    val plantsUsingFlow = plantRepository.plantsFlow.asLiveData()
     val plantsUsingFlow = growZoneFlow.flatMapLatest {
-        if (it == NoGrowZone){
+        if (it == NoGrowZone) {
             plantRepository.plantsFlow
-        }else{
+        } else {
             plantRepository.getPlantsWithGrowZoneFlow(it)
         }
     }.asLiveData()
@@ -84,6 +85,25 @@ class PlantListViewModel internal constructor(
     init {
         // When creating a new ViewModel, clear the grow zone and perform any related udpates
         clearGrowZoneNumber()
+        // flow 로 growZone값 변화 처리 . launchDataLoad 안해도됨.
+//        growZoneFlow.mapLatest { growZone ->
+//            _spinner.value = true
+//            if (growZone == NoGrowZone) {
+//                plantRepository.tryUpdateRecentPlantsCache()
+//            } else {
+//                plantRepository.tryUpdateRecentPlantsForGrowZoneCache(growZone)
+//            }
+//        }.onEach { _spinner.value = false }
+//            .catch { throwable -> _snackbar.value = throwable.message }
+//            .launchIn(viewModelScope) // 뷰모델 범위에서만 콜렉트
+
+        loadDataFor(growZoneFlow) { // 도전과제
+            if (it == NoGrowZone) {
+                plantRepository.tryUpdateRecentPlantsCache()
+            } else {
+                plantRepository.tryUpdateRecentPlantsForGrowZoneCache(it)
+            }
+        }
     }
 
     /**
@@ -97,7 +117,7 @@ class PlantListViewModel internal constructor(
         growZoneFlow.value = GrowZone(num)
 
         // initial code version, will move during flow rewrite
-        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
     }
 
     /**
@@ -111,7 +131,7 @@ class PlantListViewModel internal constructor(
         growZoneFlow.value = NoGrowZone
 
         // initial code version, will move during flow rewrite
-        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
+//        launchDataLoad { plantRepository.tryUpdateRecentPlantsCache() }
     }
 
     /**
@@ -137,6 +157,18 @@ class PlantListViewModel internal constructor(
      *              the lambda, the loading spinner will display. After completion or error, the
      *              loading spinner will stop.
      */
+
+    private fun <T> loadDataFor(source: StateFlow<T>, block: suspend (T) -> Unit) {
+        source.mapLatest {
+            _spinner.value = true
+            block(it)
+        }
+            .onEach { _spinner.value = false }
+            .onCompletion { _spinner.value = false }
+            .catch { _snackbar.value = it.message }
+            .launchIn(viewModelScope)
+    }
+
     private fun launchDataLoad(block: suspend () -> Unit): Job {
         return viewModelScope.launch {
             try {
