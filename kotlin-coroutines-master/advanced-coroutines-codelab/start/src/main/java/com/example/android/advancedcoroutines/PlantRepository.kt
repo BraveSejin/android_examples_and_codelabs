@@ -25,6 +25,8 @@ import com.example.android.advancedcoroutines.util.CacheOnSuccess
 import com.example.android.advancedcoroutines.utils.ComparablePair
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 
 /**
@@ -71,6 +73,29 @@ class PlantRepository private constructor(
         emitSource(plantsLiveData.map { plantsList ->
             plantsList.applySort(customSortOrder)
         })
+    }
+    val plantsFlow: Flow<List<Plant>>
+        get() = plantDao.getPlantsFlow()
+            .combine(customSortFlow) { plants, sortOrder ->
+                plants.applySort(sortOrder)
+            }.flowOn(defaultDispatcher)
+            .conflate() // flowOn의 버퍼가 최신값만을 저장하게 한다.
+    // flowOn : 함수  실행 "전에" 실행되고 수집될 플로우들이 돌아가는 스레드를 결정해준다.
+    // introduces a buffer to send results from the new coroutine to later calls
+    // flowOn뒤에있는 flow에 버퍼 값을 방출해준다.
+    // 이 경우에는 라이브데이터에 값 방출해주는 것.
+
+
+    private val customSortFlow = flow { emit(plantsListSortOrderCache.getOrAwait()) }
+//        .onStart { // 이렇게 하면 flow 에서 값을 두번 방출하니까, 동작을 좀더 직관적으로 알 수 있음.
+//            emit(listOf())
+//            delay(1500) //
+//        }
+//    // Create a flow that calls a single function
+//    private val customSortFlow = plantsListSortOrderCache::getOrAwait.asFlow()
+
+    fun getPlantsWithGrowZoneFlow(growZoneNumber: GrowZone): Flow<List<Plant>> {
+        return plantDao.getPlantsWithGrowZoneNumberFlow(growZoneNumber.number)
     }
 
     /**
