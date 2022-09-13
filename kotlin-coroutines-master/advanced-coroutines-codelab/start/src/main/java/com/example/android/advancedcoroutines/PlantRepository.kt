@@ -85,7 +85,6 @@ class PlantRepository private constructor(
     // flowOn뒤에있는 flow에 버퍼 값을 방출해준다.
     // 이 경우에는 라이브데이터에 값 방출해주는 것.
 
-
     private val customSortFlow = flow { emit(plantsListSortOrderCache.getOrAwait()) }
 //        .onStart { // 이렇게 하면 flow 에서 값을 두번 방출하니까, 동작을 좀더 직관적으로 알 수 있음.
 //            emit(listOf())
@@ -95,7 +94,21 @@ class PlantRepository private constructor(
 //    private val customSortFlow = plantsListSortOrderCache::getOrAwait.asFlow()
 
     fun getPlantsWithGrowZoneFlow(growZoneNumber: GrowZone): Flow<List<Plant>> {
+        // 여기서 이뤄지는 연산들 모두 main-safe함.
         return plantDao.getPlantsWithGrowZoneNumberFlow(growZoneNumber.number)
+            .map { plantsList ->
+                val sortOrderFromNetwork = plantsListSortOrderCache.getOrAwait()
+                val nexValue = plantsList.applyMainSafeSort(sortOrderFromNetwork)
+                nexValue
+            }
+    }
+    // 이렇게 하면 디비에서 읽으면서 정렬순서를 받아올수도 있다.
+    fun getPlantsWithGrowZoneFlow_mine(growZoneNumber: GrowZone): Flow<List<Plant>> {
+        return plantDao.getPlantsWithGrowZoneNumberFlow(growZoneNumber.number)
+            .combine(customSortFlow) { plants, sortOrder ->
+                plants.applySort(sortOrder)
+            }.flowOn(defaultDispatcher)
+            .conflate()
     }
 
     /**
