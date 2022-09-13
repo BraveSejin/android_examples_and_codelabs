@@ -53,7 +53,6 @@ class PlantListViewModel internal constructor(
      */
     val spinner: LiveData<Boolean>
         get() = _spinner
-
     /**
      * The current growZone selection.
      */
@@ -63,6 +62,9 @@ class PlantListViewModel internal constructor(
      * A list of plants that updates based on the current filter.
      */
     val plants: LiveData<List<Plant>> = growZone.switchMap { growZone ->
+
+        // growZone이 바뀔때마다 내부적으로 repo.plants 혹은 reponPlantsWithGrowzone 에대한
+        // 라이브데이터를 만들고, 그 데이터가 바뀔때마다 뷰모델의 plants를 갱신함.
         if (growZone == NoGrowZone) {
             plantRepository.plants
         } else {
